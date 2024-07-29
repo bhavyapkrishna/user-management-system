@@ -1,4 +1,4 @@
-import "dotenv/config";
+import dotenv from "dotenv/config";
 import express from "express";
 import mongoose from "mongoose";
 const app = express();
@@ -6,6 +6,10 @@ const app = express();
 app.get("/", (req, res) => {
     res.send("Hello World!");
 });
+
+app.post("/create-user", (req, res) => {
+    console.log("hello world!");
+})
 
 const port = process.env.PORT;
 
@@ -16,5 +20,4 @@ mongoose.connect(process.env.MONGO_CONNECTION!)
             console.log(`Server running on port ${port}`);
         });
     });
-
 
