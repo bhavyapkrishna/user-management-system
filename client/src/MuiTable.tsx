@@ -47,12 +47,11 @@ export const MuiTable = () => {
     const [admin, setAdmin] = useState<boolean>(false);
     const [update, setUpdate] = useState(false);
     const [userId, setUserId] = useState<String>("");
-    const [deleted, setDeleted] = useState<boolean>(false);
 
     useEffect(() => {
         const fetchUsers = async () => {
             try {
-                const response = await fetch("http://localhost:5000");
+                const response = await fetch("http://localhost:5000/current-users");
                 const dataList: User[] = await response.json();
                 setData(dataList);
             } catch (error) {
@@ -211,15 +210,12 @@ export const MuiTable = () => {
         console.log("user id", userId);
 
         try {
-            const deletedAt = new Date();
-
             const response = await fetch(`http://localhost:5000/remove-user/${userId}`, {
                 method: "PUT",
                 headers: {
                     "Content-type": "application/json"
                 },
                 body: JSON.stringify({
-                    deletedAt
                 })
             });
 
@@ -229,6 +225,24 @@ export const MuiTable = () => {
                 let ind = data.findIndex((usr) => usr.id === delUser.id);
                 temp.splice(ind, 1);
                 setData(temp);
+            }
+
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    const handleClearAll = async () => {
+        try {
+            const response = await fetch(`http://localhost:5000/clear-all-users`, {
+                method: "DELETE",
+                headers: {
+                    "Content-type": "application/json"
+                }
+            });
+
+            if (response.ok) {
+                console.log("all users deleted successfully");
             }
 
         } catch (err) {
@@ -247,7 +261,7 @@ export const MuiTable = () => {
                             <Button variant="contained" onClick={handleOpen}>Add User</Button>
                         </div>
                         <div className="del-all-btn-class">
-                            <Button variant="contained" onClick={handleOpen}>Delete All</Button>
+                            <Button variant="contained" onClick={handleClearAll}>Delete All Users</Button>
                         </div>
                     </Toolbar>
                 </AppBar>

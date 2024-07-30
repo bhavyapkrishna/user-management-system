@@ -25,6 +25,15 @@ app.get("/", async (req, res) => {
     }
 });
 
+app.get("/current-users", async (req, res) => {
+    try {
+        const users = await User.find({ deletedAt: null });
+        res.json(users);
+    } catch (err) {
+        console.log(err);
+    }
+});
+
 app.post("/create-user", async (req, res) => {
     console.log("database connected - added");
 
@@ -123,7 +132,6 @@ app.put("/remove-user/:id", async (req, res) => {
             {
                 $set: {
                     deletedAt: Date.now()
-
                 }
             }
         )
@@ -141,6 +149,15 @@ app.put("/remove-user/:id", async (req, res) => {
         res.status(500).json({ error: "Failed to edit user" });
     }
 });
+
+app.delete("/clear-all-users", async (req, res) => {
+    try {
+        const result = await User.deleteMany({});
+        res.status(200).json({ message: "all users cleared from db" });
+    } catch (err) {
+        console.log(err);
+    }
+})
 
 const port = process.env.PORT;
 
