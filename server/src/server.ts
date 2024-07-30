@@ -16,20 +16,9 @@ app.use(cors({
 
 import { User } from "./models/Users";
 
-app.get("/")
-
-app.get("/get-users", (req, res) => {
-    try {
-        const users = User.find({ deletedAt: null });
-        res.json(users);
-    } catch (err) {
-        console.log(err);
-    }
-});
-
 app.get("/", async (req, res) => {
     try {
-        const users = await User.find({ deletedAt: null });
+        const users = await User.find();
         res.json(users);
     } catch (err) {
         console.log(err);
@@ -128,13 +117,13 @@ app.put("/remove-user/:id", async (req, res) => {
         if (!mongoose.Types.ObjectId.isValid(userId)) {
             return res.status(400).json({ error: "Invalid user ID" });
         }
-
-        const now = new Date();
-
+        const val = Date.now()
+        console.log("date: ", val)
         const result = await User.updateOne({ id: userId },
             {
                 $set: {
-                    deletedAt: now,
+                    deletedAt: Date.now()
+
                 }
             }
         )

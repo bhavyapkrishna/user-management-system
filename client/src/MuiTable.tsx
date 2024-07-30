@@ -47,6 +47,7 @@ export const MuiTable = () => {
     const [admin, setAdmin] = useState<boolean>(false);
     const [update, setUpdate] = useState(false);
     const [userId, setUserId] = useState<String>("");
+    const [deleted, setDeleted] = useState<boolean>(false);
 
     useEffect(() => {
         const fetchUsers = async () => {
@@ -210,13 +211,15 @@ export const MuiTable = () => {
         console.log("user id", userId);
 
         try {
+            const deletedAt = new Date();
+
             const response = await fetch(`http://localhost:5000/remove-user/${userId}`, {
                 method: "PUT",
                 headers: {
                     "Content-type": "application/json"
                 },
                 body: JSON.stringify({
-                    userId
+                    deletedAt
                 })
             });
 
