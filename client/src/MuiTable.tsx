@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 import {
     TableContainer,
@@ -37,7 +37,6 @@ export const MuiTable = () => {
     const [open, setOpen] = useState(false);
 
     //define field use states
-    //const [id, setId] = useState<String>("");
     const [firstName, setFirstName] = useState<String>("");
     const [lastName, setLastName] = useState<String>("");
     const [email, setEmail] = useState<String>("");
@@ -47,7 +46,21 @@ export const MuiTable = () => {
     const [organization, setOrganization] = useState<String>("");
     const [admin, setAdmin] = useState<boolean>(false);
     const [update, setUpdate] = useState(false);
+    const [userId, setUserId] = useState<String>("");
 
+    useEffect(() => {
+        const fetchUsers = async () => {
+            try {
+                const response = await fetch("http://localhost:5000");
+                const dataList: User[] = await response.json();
+                setData(dataList);
+            } catch (error) {
+                console.log(error);
+            }
+        };
+
+        fetchUsers();
+    }, []);
 
     //open dialog
     function handleOpen() {
@@ -75,13 +88,12 @@ export const MuiTable = () => {
 
         if (update) {
             try {
-                const response = await fetch(`http://localhost:5000/edit-user`, { //`http://localhost:5000/edit-user/${id}`
+                const response = await fetch(`http://localhost:5000/edit-user/${userId}`, {
                     method: "PUT",
                     headers: {
                         "Content-type": "application/json"
                     },
                     body: JSON.stringify({
-                        //id,
                         firstName,
                         lastName,
                         email,
@@ -90,38 +102,24 @@ export const MuiTable = () => {
                         title,
                         organization,
                         admin,
-
                     })
                 });
 
-                const updatedData = await response.json();
-                //let ind = data.findIndex((usr) => usr.id === id);
+                if (response.ok) {
 
-                setFirstName(updatedData.firstName);
-                setLastName(updatedData.lastName);
-                setEmail(updatedData.email);
-                setVerified(updatedData.verified);
-                setDisplayName(updatedData.displayName);
-                setTitle(updatedData.title);
-                setOrganization(updatedData.organization);
-                setAdmin(updatedData.admin);
+                    const updatedUser = await response.json();
+                    setData((prevData) =>
+                        prevData.map((user) =>
+                            user.id === updatedUser.id ? updatedUser : user
+                        )
+                    );
 
-                /*const updatedUserDoc = {
-                    id,
-                    firstName,
-                    lastName,
-                    email,
-                    verified,
-                    displayName,
-                    title,
-                    organization,
-                    admin
-                };*/
+                    console.log("update successful");
 
-                //data[ind] = updatedUserDoc;
-                console.log("update successful");
-
-                handleClose();
+                    handleClose();
+                } else {
+                    console.log("Failed to update user");
+                }
 
             } catch (err) {
                 console.log(err);
@@ -150,7 +148,7 @@ export const MuiTable = () => {
 
                 if (response.ok) {
                     const newData = await response.json();
-                    const id = newData.id;
+                    let id = newData.id;
 
                     const userDoc = {
                         id,
@@ -167,6 +165,7 @@ export const MuiTable = () => {
                     setData((prevData) => [...prevData, userDoc]);
 
                     handleClose();
+
                 } else {
                     console.log("Failed to create new user");
                 }
@@ -179,17 +178,14 @@ export const MuiTable = () => {
     }
 
     const handleEdit = async (index: number) => {
-        /*console.log("user id", usrId);
-
-        setId(usrId);
-        let ind = data.findIndex((usr) => usr.id === usrId);
-
-        console.log("index", ind);
-        let selectedUser = data[ind];*/
 
         let selectedUser = data[index];
 
-        //setId(selectedUser.id);
+        setUserId(selectedUser.id);
+
+        console.log("edit su id", selectedUser.id);
+        console.log("edit user id", userId);
+
         setFirstName(selectedUser.firstName);
         setLastName(selectedUser.lastName);
         setEmail(selectedUser.email);
@@ -203,35 +199,39 @@ export const MuiTable = () => {
         setOpen(true);
     }
 
-    const handleDelete = async (usrId: String) => {
-        //setId(usrId);
+    const handleDelete = async (index: number) => {
+        let selectedUser = data[index];
+        setUserId(selectedUser.id);
+
+        console.log("del index", index);
+        console.log("user", selectedUser);
+
+        console.log("id", selectedUser.id);
+        console.log("user id", userId);
 
         try {
-            const response = await fetch(`http://localhost:5000/delete-user/`, { //http://localhost:5000/delete-user/${id}
+            const response = await fetch(`http://localhost:5000/remove-user/${userId}`, {
                 method: "PUT",
                 headers: {
                     "Content-type": "application/json"
                 },
                 body: JSON.stringify({
-                    //id
+                    userId
                 })
             });
 
-            await response.json();
-
             if (response.ok) {
+                const delUser = await response.json();
                 let temp = [...data];
-                //let ind = data.findIndex((usr) => usr.id === id);
-                //temp.splice(ind, 1);
-                //setData(temp);
+                let ind = data.findIndex((usr) => usr.id === delUser.id);
+                temp.splice(ind, 1);
+                setData(temp);
             }
 
         } catch (err) {
             console.log(err);
         }
     }
-
-
 
     return (
         <div>
@@ -296,7 +296,7 @@ export const MuiTable = () => {
                                         <Button
                                             className="delete-task"
                                             variant="contained"
-                                            onClick={() => handleDelete(row.id)}
+                                            onClick={() => handleDelete(index)}
                                             color="error"
                                         >Delete</Button>
                                     </div>

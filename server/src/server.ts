@@ -5,6 +5,7 @@ import cors from "cors";
 
 const app = express();
 app.use(express.json());
+app.use(express.static('public'));
 
 app.use(cors({
     origin: "*",
@@ -15,8 +16,24 @@ app.use(cors({
 
 import { User } from "./models/Users";
 
-app.get("/", (req, res) => {
-    res.send("Hello World!");
+app.get("/")
+
+app.get("/get-users", (req, res) => {
+    try {
+        const users = User.find({ deletedAt: null });
+        res.json(users);
+    } catch (err) {
+        console.log(err);
+    }
+});
+
+app.get("/", async (req, res) => {
+    try {
+        const users = await User.find({ deletedAt: null });
+        res.json(users);
+    } catch (err) {
+        console.log(err);
+    }
 });
 
 app.post("/create-user", async (req, res) => {
@@ -52,76 +69,83 @@ app.post("/create-user", async (req, res) => {
     }
 });
 
-/*app.put("/edit-user/:id", async (req, res) => {
-    console.log("database connected - edited");
+app.put("/edit-user/:id", async (req, res) => {
+    console.log("database connected - edited for", req.params.id);
 
     try {
         const userId = req.params.id;
-        const user = req.body;
 
-        const updatedUser = {
-            id: userId,
-            ...req.body,
-            deletedAt: null
+        if (!mongoose.Types.ObjectId.isValid(userId)) {
+            return res.status(400).json({ error: "Invalid user ID" });
         }
 
-        await User.updateOne({ id: new mongoose.Types.ObjectId(userId) },
-            { $set: updatedUser }
-        );
+        const user = req.body;
+
+        const result = await User.updateOne({ id: userId },
+            {
+                $set: {
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    email: user.email,
+                    verified: user.verified,
+                    displayName: user.displayName,
+                    title: user.title,
+                    organization: user.organization,
+                    admin: user.admin
+
+                }
+            }
+        )
+
+        if (!result) {
+            return res.status(404).json({ error: "User not found" });
+        }
 
         res.status(200).json({
             id: userId,
-            firstName: updatedUser.firstName,
-            lastName: updatedUser.lastName,
-            email: updatedUser.email,
-            verified: updatedUser.verified,
-            displayName: updatedUser.displayName,
-            title: updatedUser.title,
-            organization: updatedUser.organization,
-            admin: updatedUser.admin
+            firstName: req.body.firstName,
+            lastName: req.body.lastName,
+            email: req.body.email,
+            verified: req.body.verified,
+            displayName: req.body.displayName,
+            title: req.body.title,
+            organization: req.body.organization,
+            admin: req.body.admin
         });
 
     } catch (err) {
         console.log(err);
         res.status(500).json({ error: "Failed to edit user" });
     }
-});*/
-
-app.put("/edit-user/:id", async (req, res) => {
-    try {
-        const userId = req.params.id;
-        const updatedUser = req.body;
-
-        const result = await User.updateOne(
-            { _id: new mongoose.Types.ObjectId(userId) },
-            { $set: updatedUser }
-        );
-
-        if (result.matchedCount > 0) {
-            res.status(200).json(updatedUser);
-        } else {
-            res.status(404).json({ error: "User not found" });
-        }
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: "Failed to update user" });
-    }
 });
 
-app.put("/delete-user/:id", async (req, res) => {
-    console.log("database connected - deleted");
+app.put("/remove-user/:id", async (req, res) => {
+    console.log("database connected - deleted for", req.params.id);
 
     try {
         const userId = req.params.id;
 
-        await User.updateOne({ id: userId },
-            {
-                $set:
-                    { deletedAt: Date.now() }
-            }
-        );
+        if (!mongoose.Types.ObjectId.isValid(userId)) {
+            return res.status(400).json({ error: "Invalid user ID" });
+        }
 
-        res.status(200);
+        const now = new Date();
+
+        const result = await User.updateOne({ id: userId },
+            {
+                $set: {
+                    deletedAt: now,
+                }
+            }
+        )
+
+        if (!result) {
+            return res.status(404).json({ error: "User not deleted" });
+        }
+
+        res.status(200).json({
+            id: userId
+        });
 
     } catch (err) {
         console.log(err);
