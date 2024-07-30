@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import logo from './logo.svg';
 import './App.css';
-import { MuiTable } from './components/MuiTable'
+import { MuiTable } from './MuiTable'
 
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
