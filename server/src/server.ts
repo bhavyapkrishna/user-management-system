@@ -16,6 +16,7 @@ app.use(cors({
 
 import { User } from "./models/Users";
 
+//get all users in db
 app.get("/", async (req, res) => {
     try {
         const users = await User.find();
@@ -25,6 +26,7 @@ app.get("/", async (req, res) => {
     }
 });
 
+//get only users that haven't been deleted
 app.get("/current-users", async (req, res) => {
     try {
         const users = await User.find({ deletedAt: null });
@@ -34,6 +36,7 @@ app.get("/current-users", async (req, res) => {
     }
 });
 
+//create a new user
 app.post("/create-user", async (req, res) => {
     console.log("database connected - added");
 
@@ -60,13 +63,13 @@ app.post("/create-user", async (req, res) => {
             admin: newUser.admin
         });
 
-        //return userId;
     } catch (e) {
         console.log(e);
         res.status(500).json({ error: "Failed to create user" });
     }
 });
 
+//edit a user
 app.put("/edit-user/:id", async (req, res) => {
     console.log("database connected - edited for", req.params.id);
 
@@ -117,6 +120,7 @@ app.put("/edit-user/:id", async (req, res) => {
     }
 });
 
+//remove a user - set the deletedAt value 
 app.put("/remove-user/:id", async (req, res) => {
     console.log("database connected - deleted for", req.params.id);
 
@@ -126,8 +130,7 @@ app.put("/remove-user/:id", async (req, res) => {
         if (!mongoose.Types.ObjectId.isValid(userId)) {
             return res.status(400).json({ error: "Invalid user ID" });
         }
-        const val = Date.now()
-        console.log("date: ", val)
+
         const result = await User.updateOne({ id: userId },
             {
                 $set: {
@@ -150,7 +153,10 @@ app.put("/remove-user/:id", async (req, res) => {
     }
 });
 
+//clear all users
 app.delete("/clear-all-users", async (req, res) => {
+    console.log("database connected - cleared");
+
     try {
         const result = await User.deleteMany({});
         res.status(200).json({ message: "all users cleared from db" });

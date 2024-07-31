@@ -1,0 +1,28 @@
+
+body {
+    margin: 0;
+    padding: 1rem;
+    font-family: system-ui, sans-serif;
+    background-color: #F5F5F5;
+}
+
+.add-btn-class {
+    position: absolute;
+    right: 200px;
+}
+
+.del-all-btn-class {
+    position: absolute;
+    right: 12px;
+}
+
+.formBox {
+    display: flex;
+    flex-direction: column;
+
+}
+
+
+
+
+

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import './MuiTable.css'
 
 import {
     TableContainer,
@@ -16,6 +17,8 @@ import {
     Dialog,
     DialogContent,
     TextField,
+    FormControlLabel,
+    Checkbox
 } from '@mui/material'
 
 
@@ -48,6 +51,7 @@ export const MuiTable = () => {
     const [update, setUpdate] = useState(false);
     const [userId, setUserId] = useState<String>("");
 
+    //at every refresh, repopulate the table with current users
     useEffect(() => {
         const fetchUsers = async () => {
             try {
@@ -86,6 +90,7 @@ export const MuiTable = () => {
     const handleAdd = async (e: React.FormEvent) => {
         e.preventDefault();
 
+        //if the user in the table is being edited
         if (update) {
             try {
                 const response = await fetch(`http://localhost:5000/edit-user/${userId}`, {
@@ -182,10 +187,6 @@ export const MuiTable = () => {
         let selectedUser = data[index];
 
         setUserId(selectedUser.id);
-
-        console.log("edit su id", selectedUser.id);
-        console.log("edit user id", userId);
-
         setFirstName(selectedUser.firstName);
         setLastName(selectedUser.lastName);
         setEmail(selectedUser.email);
@@ -199,15 +200,15 @@ export const MuiTable = () => {
         setOpen(true);
     }
 
-    const handleDelete = async (index: number) => {
-        let selectedUser = data[index];
-        setUserId(selectedUser.id);
+    const handleDelete = async (userId: String) => {
+        //let selectedUser = data[index];
+        //setUserId(selectedUser.id);
 
-        console.log("del index", index);
-        console.log("user", selectedUser);
+        //console.log("del index", index);
+        //console.log("user", selectedUser);
 
-        console.log("id", selectedUser.id);
-        console.log("user id", userId);
+        //console.log("id", selectedUser.id);
+        //console.log("user id", userId);
 
         try {
             const response = await fetch(`http://localhost:5000/remove-user/${userId}`, {
@@ -245,6 +246,8 @@ export const MuiTable = () => {
                 console.log("all users deleted successfully");
             }
 
+            setData([]);
+
         } catch (err) {
             console.log(err);
         }
@@ -255,41 +258,44 @@ export const MuiTable = () => {
             { /* page heading/app bar */}
             <Box>
                 <AppBar position="static">
-                    <Toolbar sx={{ position: "relative" }}>
-                        <Typography variant="h6" component="div">Manage Users</Typography>{' '}
+                    <Toolbar sx={{ justifyContent: 'center', position: 'relative', bgcolor: "#7EA798" }}>
+                        <Typography text-align="center" variant="h6" component="div">Manage Users</Typography>{' '}
                         <div className="add-btn-class">
-                            <Button variant="contained" onClick={handleOpen}>Add User</Button>
+                            <Button variant="contained" sx={{
+                                justifyContent: 'center', bgcolor: "#7EA798", '&:hover': {
+                                    bgcolor: '#5c7a6f',
+                                }
+                            }} onClick={handleOpen}>Add User</Button>
                         </div>
                         <div className="del-all-btn-class">
-                            <Button variant="contained" onClick={handleClearAll}>Delete All Users</Button>
+                            <Button variant="contained" sx={{
+                                justifyContent: 'center', bgcolor: "#7EA798", '&:hover': {
+                                    bgcolor: '#5c7a6f',
+                                }
+                            }} onClick={handleClearAll}>Delete All Users</Button>
                         </div>
                     </Toolbar>
                 </AppBar>
             </Box>
 
             { /* data table displayed on the page*/}
-            <TableContainer component={Paper} sx={{ maxHeight: '300px' }}>
+            <TableContainer component={Paper}>
                 <Table aria-label='table' stickyHeader>
                     <TableHead>
                         <TableRow>
-                            <TableCell align="right">ID</TableCell>
-                            <TableCell align="right">First Name</TableCell>
-                            <TableCell align="right">Last Name</TableCell>
-                            <TableCell align="right">Email</TableCell>
-                            <TableCell align="right">Verified</TableCell>
-                            <TableCell align="right">Display Name</TableCell>
-                            <TableCell align="right">Title</TableCell>
-                            <TableCell align="right">Organization</TableCell>
-                            <TableCell align="right">Current User Group</TableCell>
-                            <TableCell align="right">Action</TableCell>
+                            <TableCell align="center">ID</TableCell>
+                            <TableCell align="center">First Name</TableCell>
+                            <TableCell align="center">Last Name</TableCell>
+                            <TableCell align="center">Email</TableCell>
+                            <TableCell align="center">Verified</TableCell>
+                            <TableCell align="center">Display Name</TableCell>
+                            <TableCell align="center">Title</TableCell>
+                            <TableCell align="center">Organization</TableCell>
+                            <TableCell align="center">Current User Group</TableCell>
+                            <TableCell align="center">Action</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {/* 
-                        during refresh, fetch data from the db
-                        normally just update use state and add into table when post req is successful
-                        */}
-
                         {data.map((row: User, index) => (
                             <TableRow key={index}>
                                 <TableCell align="center">{row.id}</TableCell>
@@ -306,15 +312,23 @@ export const MuiTable = () => {
                                         <Button
                                             className="update-task"
                                             variant="contained"
-                                            onClick={() => handleEdit(index)}
+                                            onClick={() => handleEdit(index)} sx={{
+                                                justifyContent: 'center', bgcolor: "#7EA798", '&:hover': {
+                                                    bgcolor: '#5c7a6f',
+                                                }
+                                            }}
                                         >Update</Button>
                                     </div>
                                     <div>
                                         <Button
                                             className="delete-task"
                                             variant="contained"
-                                            onClick={() => handleDelete(index)}
-                                            color="error"
+                                            onClick={() => handleDelete(row.id)}
+                                            sx={{
+                                                justifyContent: 'center', bgcolor: "#CC0000", '&:hover': {
+                                                    bgcolor: '#a10202',
+                                                }
+                                            }}
                                         >Delete</Button>
                                     </div>
                                 </TableCell>
@@ -325,11 +339,11 @@ export const MuiTable = () => {
             </TableContainer>
 
             { /*dialog box*/}
-            <Dialog open={open} onClose={handleClose}>
+            <Dialog sx={{ padding: 3 }} open={open} onClose={handleClose} maxWidth="sm" fullWidth>
                 <DialogContent>
                     <Box>
                         <AppBar position="static">
-                            <Toolbar sx={{ position: "relative" }}>
+                            <Toolbar sx={{ justifyContent: 'center', position: 'relative', bgcolor: "#7EA798" }}>
                                 {update ? (
                                     <Typography variant="h6" component="div">Edit User</Typography>
                                 ) : (
@@ -339,42 +353,73 @@ export const MuiTable = () => {
                         </AppBar>
                     </Box>
 
-                    <Box component="form" noValidate autoComplete="off">
-                        <Box className="formBox">
-                            <TextField label="First Name" required id="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)}></TextField>
-                            <br />
-                            <TextField label="Last Name" required id="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)}></TextField>
-                            <br />
-                            <TextField label="Email" required id="email" value={email} onChange={(e) => setEmail(e.target.value)}></TextField>
-                            <br />
-                            <div>
-                                <label htmlFor="verified">Verified:</label>
-                                <input type="checkbox" id="verified" checked={verified} onChange={(e) => setVerified(e.target.checked)}></input>
-                            </div>
+                    <Box component="form" noValidate autoComplete="off" sx={{ mt: 2 }}>
+                        <Box className="formBox" sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                            <TextField label="First Name" required id="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} fullWidth ></TextField>
 
-                            <TextField label="Display Name" required id="displayName" value={displayName} onChange={(e) => setDisplayName(e.target.value)}></TextField>
-                            <br />
-                            <TextField label="Title" required id="title" value={title} onChange={(e) => setTitle(e.target.value)}></TextField>
-                            <br />
-                            <TextField label="Organization" required id="organization" value={organization} onChange={(e) => setOrganization(e.target.value)}></TextField>
-                            <br />
+                            <TextField label="Last Name" required id="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} fullWidth ></TextField>
 
-                            <div>
-                                <label htmlFor="admin">Admin:</label>
-                                <input type="checkbox" id="admin" checked={admin} onChange={(e) => setAdmin(e.target.checked)}></input>
-                            </div>
+                            <TextField label="Email" required id="email" value={email} onChange={(e) => setEmail(e.target.value)} fullWidth ></TextField>
+
+                            <FormControlLabel
+                                control={
+                                    <Checkbox
+                                        checked={verified}
+                                        onChange={(e) => setVerified(e.target.checked)}
+                                        sx={{
+                                            transform: 'scale(1.2)',
+                                            color: '#B0B0B0',
+                                            '&.Mui-checked': { color: '#B0B0B0' }
+                                        }}
+                                    />
+                                }
+                                label="Verified"
+                            />
+                            <TextField label="Display Name" required id="displayName" value={displayName} onChange={(e) => setDisplayName(e.target.value)} fullWidth ></TextField>
+
+                            <TextField label="Title" required id="title" value={title} onChange={(e) => setTitle(e.target.value)} fullWidth ></TextField>
+
+                            <TextField label="Organization" required id="organization" value={organization} onChange={(e) => setOrganization(e.target.value)} fullWidth ></TextField>
+
+
+                            <FormControlLabel
+                                control={
+                                    <Checkbox
+                                        checked={admin}
+                                        onChange={(e) => setAdmin(e.target.checked)}
+                                        sx={{
+                                            transform: 'scale(1.2)',
+                                            color: '#B0B0B0',
+                                            '&.Mui-checked': { color: '#B0B0B0' }
+                                        }}
+                                    />
+                                }
+                                label="Admin"
+                            />
                         </Box>
                     </Box>
 
-                    <Box>
+                    <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-between' }}>
                         {update ? (
-                            <Button className="editBtn" variant="contained" onClick={handleAdd}>Update</Button>
+                            <Button className="editBtn" variant="contained" sx={{
+                                justifyContent: 'center', bgcolor: "#7EA798", '&:hover': {
+                                    bgcolor: '#5c7a6f',
+                                }
+                            }} onClick={handleAdd}>Update</Button>
                         ) : (
-                            <Button className="addBtn" variant="contained" onClick={handleAdd}>Add</Button>
+                            <Button className="addBtn" variant="contained" sx={{
+                                justifyContent: 'center', bgcolor: "#7EA798", '&:hover': {
+                                    bgcolor: '#5c7a6f',
+                                }
+                            }} onClick={handleAdd}>Add</Button>
                         )}
 
-                        <br />
-                        <Button className="cancelBtn" variant="contained" onClick={handleClose}>Cancel</Button>
+
+                        <Button className="cancelBtn" variant="contained" sx={{
+                            justifyContent: 'center', bgcolor: "#CC0000", '&:hover': {
+                                bgcolor: '#a10202',
+                            }
+                        }} onClick={handleClose}>Cancel</Button>
                     </Box>
                 </DialogContent>
             </Dialog>
