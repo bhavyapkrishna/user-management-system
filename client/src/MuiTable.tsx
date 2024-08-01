@@ -182,6 +182,7 @@ export const MuiTable = () => {
         }
     }
 
+    //set "update" to true and fill the dialog up with the values from the selected user
     const handleEdit = async (index: number) => {
 
         let selectedUser = data[index];
@@ -200,16 +201,8 @@ export const MuiTable = () => {
         setOpen(true);
     }
 
+    //send a request use the return value of the request to remove the correct user from the table
     const handleDelete = async (userId: String) => {
-        //let selectedUser = data[index];
-        //setUserId(selectedUser.id);
-
-        //console.log("del index", index);
-        //console.log("user", selectedUser);
-
-        //console.log("id", selectedUser.id);
-        //console.log("user id", userId);
-
         try {
             const response = await fetch(`http://localhost:5000/remove-user/${userId}`, {
                 method: "PUT",
@@ -233,6 +226,7 @@ export const MuiTable = () => {
         }
     }
 
+    //send a request to wipe the entire database
     const handleClearAll = async () => {
         try {
             const response = await fetch(`http://localhost:5000/clear-all-users`, {
